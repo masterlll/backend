@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"backend/lid/auth"
 	"encoding/json"
 	"net/http"
 
@@ -16,6 +17,8 @@ func Init(database *sqlx.DB) {
 	db = database
 }
 
+type Handler func(r *http.Request, urlValues map[string]string, db *sqlx.Tx, userId string) (statusCode int, err error, output interface{})
+
 //PlainHandler
 type PlainHandler func(res http.ResponseWriter, req *http.Request, urlValues map[string]string, db *sqlx.DB)
 
@@ -30,10 +33,47 @@ func SendResponse(res http.ResponseWriter, statusCode int, data interface{}) {
 	}
 }
 
-//Wrap  a middleware to handle user authorization
 func Plain(f PlainHandler) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		f(res, req, mux.Vars(req), db)
 	}
 
+}
+
+//Wrap  a middleware to handle user authorization
+func Wrap(f Handler) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		userId, err := auth.Verify(req.Header.Get("Authorization"))
+		if err != nil {
+			SendResponse(res, http.StatusUnauthorized, map[string]string{"error": err.Error()})
+			return
+		} else {
+			//please think carefully on this design, as it has potential security problem
+			if newToken, err := auth.ToekenSign(userId); err != nil {
+				SendResponse(res, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				return
+			} else {
+				res.Header().Add("Authorization", newToken) // update JWT Token
+			}
+		}
+
+		//prepare a database session for the handler
+		session, err := db.Beginx()
+		if err != nil {
+			SendResponse(res, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		//everything seems fine, goto the business logic handler
+		if statusCode, err, output := f(req, mux.Vars(req), session, userId); err == nil {
+			//the business logic handler return no error, then try to commit the db session
+			if err := session.Commit(); err != nil {
+				SendResponse(res, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			} else {
+				SendResponse(res, statusCode, output)
+			}
+		} else {
+			session.Rollback()
+			SendResponse(res, statusCode, map[string]string{"error": err.Error()})
+		}
+	}
 }

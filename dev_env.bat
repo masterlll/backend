@@ -9,7 +9,7 @@ set DB_MAX_IDLE_CONN=8
 ::  Database MAX OPEN_CONN  : Your server count with Logic CPU Core 
 set DB_MAX_OPEN_CONN=16
 :: You should use private_key.pem
-set JWT_RSA_KEY_LOCATION=ArVm0yy4Qvi67CqfV6kf_mb-Tic 
+set JWT_RSA_KEY_LOCATION=private_key.pem
 set JWT_OLD_RSA_KEY_LOCATION=''
 
  :: 180 minute  ; 3 hours  

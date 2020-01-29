@@ -9,7 +9,7 @@ export DB_MAX_IDLE_CONN=8
 #  Database MAX OPEN_CONN  : Your server count with Logic CPU Core 
 export DB_MAX_OPEN_CONN=16
 
-export JWT_RSA_KEY_LOCATION='ArVm0yy4Qvi67CqfV6kf_mb-Tic' # You should use private_key.pem
+export JWT_RSA_KEY_LOCATION='private_key.pem' # You should use private_key.pem
 export JWT_OLD_RSA_KEY_LOCATION=''
 
 # 180 minute  ; 3 hours  
