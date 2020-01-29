@@ -108,6 +108,6 @@ func authRoute(router *mux.Router) {
 //  Route : User
 func userRoute(router *mux.Router) {
 
-	router.HandleFunc("/v1/users/{user}", middleware.Wrap(handler.UserGet)).Methods("GET")
+	router.HandleFunc("/v1/users/{user}", middleware.Wrap(handler.UserGetOne)).Methods("GET")
 	router.HandleFunc("/v1/users/", middleware.Plain(handler.UserCreate)).Methods("POST")
 }
