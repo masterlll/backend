@@ -21,29 +21,29 @@ func Login(w http.ResponseWriter, r *http.Request, urlValues map[string]string, 
 	}
 	err := util.ValidType(r, &input)
 	if err != nil {
-		middleware.SendResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		middleware.SendResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()}, err)
 		return
 	}
 
 	user := model.User{}
 	_, err = database.UserGetOne(&user, db, input.Email)
 	if err != nil {
-		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()}, err)
 		return
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)) != nil {
-		middleware.SendResponse(w, http.StatusUnauthorized, map[string]string{"error": "Incorrect Email / Password"})
+		middleware.SendResponse(w, http.StatusUnauthorized, map[string]string{"error": "Incorrect Email / Password"}, nil)
 		return
 	}
 
 	if newToken, err := auth.ToekenSign(user.ID); err != nil {
-		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()}, err)
 	} else {
 		// update JWT Token
 		w.Header().Add("Authorization", newToken)
 		//allow CORS
 		w.Header().Set("Access-Control-Expose-Headers", "Authorization")
-		middleware.SendResponse(w, http.StatusOK, map[string]string{"userId": user.ID})
+		middleware.SendResponse(w, http.StatusOK, map[string]string{"userId": user.ID}, nil)
 	}
 }

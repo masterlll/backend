@@ -12,6 +12,7 @@ require (
 	github.com/goinggo/mapstructure v0.0.0-20140717182941-194205d9b4a9
 	github.com/gorilla/mux v1.7.3
 	github.com/jmoiron/sqlx v1.2.0
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
