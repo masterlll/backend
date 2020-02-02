@@ -25,7 +25,7 @@ func UserCreate(w http.ResponseWriter, r *http.Request, urlValues map[string]str
 
 	err := util.ValidType(r, &user)
 	if err != nil {
-		middleware.SendResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		middleware.SendResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()}, err)
 		return
 	}
 	userID := uuid.NewV4().String()
@@ -33,25 +33,25 @@ func UserCreate(w http.ResponseWriter, r *http.Request, urlValues map[string]str
 	// hash  password
 	digest, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()}, err)
 		return
 	}
 	user.Password = string(digest)
 
 	_, err = database.UserCreate(db, userID, user.Email, user.Password)
 	if err != nil {
-		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()}, err)
 		return
 	}
 
 	if newToken, err := auth.ToekenSign(userID); err != nil {
-		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		middleware.SendResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()}, err)
 	} else {
 		// update JWT Token
 		w.Header().Add("Authorization", newToken)
 		//allow CORS
 		w.Header().Set("Access-Control-Expose-Headers", "Authorization")
-		middleware.SendResponse(w, http.StatusOK, map[string]string{"userId": userID})
+		middleware.SendResponse(w, http.StatusOK, map[string]string{"userId": userID}, nil)
 	}
 }
 

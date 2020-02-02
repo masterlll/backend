@@ -4,6 +4,7 @@ import (
 	"backend/handler"
 	"backend/lid/auth"
 	"backend/lid/config"
+	"backend/lid/logroute"
 	"backend/lid/middleware"
 	"backend/setting"
 	"crypto/rsa"
@@ -71,6 +72,10 @@ func init() {
 	// middleware
 	log.Println(" Middleware Start ... ")
 	middleware.Init(db)
+
+	log.Println(" Logroute  Start ... ")
+	logroute.Init()
+
 }
 
 // RouteHub
