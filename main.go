@@ -29,9 +29,6 @@ func main() {
 func init() {
 
 	log.Println(" Init Start ...")
-
-	//Old go compiler, it is a must to enable multithread processing
-	//runtime.GOMAXPROCS(runtime.NumCPU())
 	// db
 	log.Println(" Db Start ... ")
 	connString :=
@@ -42,9 +39,6 @@ func init() {
 			")/" + config.GetStr(setting.DBName) +
 			"?allowNativePasswords=true&parseTime=true&charset=utf8mb4"
 
-		//	 log.Println("connString", connString)
-
-	//"root:8gm3Ncxf@tcp(47.91.251.106:3307)/group_ut?allowNativePasswords=true&parseTime=true&charset=utf8mb4
 	db, err := sqlx.Connect("mysql", connString)
 	if err != nil {
 		log.Panic("DB connection initialization failed", err)
@@ -82,15 +76,12 @@ func init() {
 // RouteHub
 func routeHub() {
 
-	// urlRandomRegexp
-
 	router := mux.NewRouter()
-
+	uuidRegexp := `[[:alnum:]]{8}-[[:alnum:]]{4}-4[[:alnum:]]{3}-[89AaBb][[:alnum:]]{3}-[[:alnum:]]{12}`
 	//  Routes
-	authRoute(router)
-	userRoute(router)
+	authRoute(router, uuidRegexp)
+	userRoute(router, uuidRegexp)
 	//
-
 	recovery := negroni.NewRecovery()
 	recovery.PrintStack = false
 	n := negroni.New(recovery, negroni.NewLogger())
@@ -99,15 +90,15 @@ func routeHub() {
 }
 
 //  Route : Auth
-func authRoute(router *mux.Router) {
-
-	router.HandleFunc("/v1/auths/{auth}", middleware.Wrap(handler.AuthGet)).Methods("GET")
-
+func authRoute(router *mux.Router, uuidRegexp string) {
+	router.HandleFunc("/v1/auth/", middleware.Plain(handler.Login)).Methods("POST")
 }
 
 //  Route : User
-func userRoute(router *mux.Router) {
+func userRoute(router *mux.Router, uuidRegexp string) {
 
-	router.HandleFunc("/v1/users/{user}", middleware.Wrap(handler.UserGetOne)).Methods("GET")
+	router.HandleFunc("/v1/users/{userId:"+uuidRegexp+"}", middleware.Wrap(handler.UserGetOne)).Methods("GET")
 	router.HandleFunc("/v1/users/", middleware.Plain(handler.UserCreate)).Methods("POST")
+	router.HandleFunc("/v1/users/{userId:"+uuidRegexp+"}", middleware.Wrap(handler.UserPassWordUpdate)).Methods("PUT")
+	router.HandleFunc("/v1/users/{userId:"+uuidRegexp+"}", middleware.Wrap(handler.UserDelete)).Methods("DELETE")
 }

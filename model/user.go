@@ -5,8 +5,9 @@ import (
 )
 
 type User struct {
-	UserID     string    `db:"user_id" json:"UserId `
-	Name       string    `db:"name" json:"name"`
+	ID         string    `db:"id" json:"UserId `
+	Name       string    `db:"nickname" json:"name"`
+	Password   string    `db:"password"`
 	CreateTime time.Time `db:"create_at" json:"createTime" `
 	UpdateTime time.Time `db:"update_at" json:"updateTime" `
 }
